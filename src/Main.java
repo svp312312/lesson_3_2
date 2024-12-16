@@ -1,3 +1,4 @@
+//Задача парсинга лог-файла
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -12,12 +13,11 @@ import java.io.FileWriter;
 
 public class Main {
 
-    //private static final String LOG_PATTERN = "(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\+\\d{2}:\\d{2})~(GET|POST) \"(.*?)\"";
     private static final String LOG_PATTERN = "(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\+\\d{2}:\\d{2})~(GET|POST) \"(.*?)$";
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 
     public static void main(String[] args) {
-        //****Создаем новый файл только с api, обрезаем данные, передаваемые get-запросами
+        //****Создаем новый файл только с api, обрезаем токены и данные, передаваемые get-запросами
         String inputFilePath = "production_log.csv";  // Путь к исходному файлу
         String outputFilePath = "input.txt"; // Путь к выходному файлу
 
@@ -60,8 +60,8 @@ public class Main {
 
         //***Решаем задачу парсинга
 
+        String logFilePath = "input.txt"; // путь к новому лог-файлу
 
-        String logFilePath = "input.txt"; // путь к лог-файлу
         //Структура данных: используется Map<String, Map<String, Integer>>,
         // где ключом первого уровня является метод, а ключом второго уровня — минутный интервал.
         // Значением второго уровня является количество запросов за эту минуту.
@@ -95,13 +95,11 @@ public class Main {
         if (matcher.find()) {
             String timestamp = matcher.group(1);
             String method = matcher.group(3);
-            //System.out.println(method);
 
             // Проверяем, начинается ли метод с /api/
             if (method.startsWith("/api/")) {
                 LocalDateTime dateTime = LocalDateTime.parse(timestamp, DATE_TIME_FORMATTER);
                 String minuteKey = dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"));
-
                 methodCounts.putIfAbsent(method, new HashMap<>());
                 methodCounts.get(method).put(minuteKey, methodCounts.get(method).getOrDefault(minuteKey, 0) + 1);
             }
@@ -110,66 +108,3 @@ public class Main {
 }
 
 
-
-//import java.io.FileWriter;
-//import java.io.IOException;
-//import java.nio.file.Files;
-//import java.nio.file.Paths;
-//import java.time.LocalDate;
-//import java.time.LocalDateTime;
-//import java.time.ZoneOffset;
-//import java.time.format.DateTimeFormatter;
-//import java.util.*;
-//import java.util.regex.Matcher;
-//import java.util.regex.Pattern;
-//
-//public class Main {
-//    private static String path = "production_log.csv";
-//    private static String outputPath = "output.txt";
-//    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy:HH:mm:ss Z", Locale.ENGLISH);
-//    private static String dateTimeRegex = ".+\\[([^\\]]{20}\\s\\+[0-9]{4})\\].+";
-//
-//    public static void main(String[] args) throws IOException {
-//        Pattern dateTimePattern = Pattern.compile(dateTimeRegex);
-////        HashMap<Long, Integer> countPerSecond = new HashMap<>();
-////        long minTime = Long.MAX_VALUE;
-////        long maxTime = Long.MIN_VALUE;
-////        int requestsCount = 0;
-//
-////        LocalDateTime time = LocalDateTime.of(2024, 12, 5, 6, 7, 8);
-////        System.out.println(time);
-//
-//        List<String> lines = Files.readAllLines(Paths.get(path));
-//        for (String line : lines) {
-//            System.out.println(line);
-//        }
-//    }
-////            Matcher matcher = dateTimePattern.matcher(line);
-////            if(!matcher.find()){
-////                continue;
-////            }
-////            String dateTime = matcher.group(1);
-////            long time = getTimestamp(dateTime);
-////            if(!countPerSecond.containsKey(time)){
-////                countPerSecond.put(time, 0);
-////
-////            }
-////            countPerSecond.put(time, countPerSecond.get(time) + 1);
-////            minTime = Math.min(time, minTime);
-////            maxTime = Math.max(time, maxTime);
-////            requestsCount++;
-////            System.out.println(dateTime);
-////        }
-////        int maxRequestsPerSecond = Collections.max(countPerSecond.values());
-////        double averageRequestsPerSecond = (double) requestsCount / (maxTime - minTime);
-////
-////        Statistics statistics = new Statistics(maxRequestsPerSecond,averageRequestsPerSecond);
-////        System.out.println(statistics);
-////
-////    }
-////    public static long getTimestamp (String dateTime){
-////        LocalDateTime time = LocalDateTime.parse(dateTime, formatter);
-////        return time.toEpochSecond(ZoneOffset.UTC);
-////    }
-//
-//}
